@@ -9,6 +9,7 @@ ART  = 'art-default.jpg'
 ICON = 'icon-default.png'
 
 URL = 'http://www.engadget.com/video/'
+VIDDLER_URL = 'http://www.viddler.com/simple/%s'
 
 ####################################################################################################
 
@@ -42,7 +43,7 @@ def VideoMainMenu():
                 DirectoryItem(
                     VideoLibrary,
                     video_nav.xpath('.//span/text()')[0]
-                ) url=video_nav.get('href'), page=1))
+                ), url="http://www.engadget.com/video-nav-grab-tags/featured", page=1))
 
     # ... and then return the container
     return dir
@@ -50,8 +51,34 @@ def VideoMainMenu():
 def VideoLibrary(sender, url, page):
     dir = MediaContainer(title2=sender.itemTitle)
 
-    for video in HTML.ElementFromURL(url).xpath('.//ul[@class="video_content_item_list"]/li'):
-        Log("Hello World")
+    Log(url)
+
+    #videos is empty why?
+    #.//ul[@class="video_content_item_list"]/li
+    videos = HTML.ElementFromURL(url).xpath('.//li')
+
+    Log(len(videos))
+
+    for video in videos:
+        #Log("Hello World")
+        video_title = video.xpath('.//div[@class="video_item_title"]/a/text()')[0]
+        #Log(video_title)
+        #video_thumb = video.xpath('.//div[@class="video_content_item_image"]/img')[0].get('src')
+        #Log(video_thumb)
+        #video_date = video.xpath('.//div[@class="video_item_date"]/text()')[0]
+        #Log(video_date)
+        video_id = video.xpath('.//div[@class="video_item_title"]/a')[0].get('rel')
+        #Log(video_id)
+
+        dir.Append(WebVideoItem(url=VIDDLER_URL%video_id, title=video_title))
 
     return dir
+
+def GetVideosURL(url):
+   eou = url.split("/")[-1]
+
+   if eou in ('featured','unboxing','hands-on'):
+       return "http://www.engadget.com/video_nav_grab_tags/%s" % eou
+   else:
+       return "http://www.engadget.com/video_nav_grab_no_tags/engadget"
 
